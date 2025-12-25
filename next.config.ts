@@ -1,7 +1,6 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -13,32 +12,20 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
-        port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
         pathname: '/**',
       },
     ],
   },
-  devIndicators: {
-    buildActivity: false,
-    appIsrStatus: false,
-  },
-  experimental: {
-    allowedDevOrigins: [
-        "https://6000-firebase-healthdemo2-1766254571522.cluster-ancjwrkgr5dvux4qug5rbzyc2y.cloudworkstations.dev"
-    ]
-  }
 };
 
 export default nextConfig;
