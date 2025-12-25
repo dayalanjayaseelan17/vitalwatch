@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { HeartPulse, User, Calendar, GitCommitHorizontal, Weight } from 'lucide-react';
+import { HeartPulse, User, Calendar, GitCommitHorizontal, Weight, Mail, Lock } from 'lucide-react';
 import { Auth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { cn } from '@/lib/utils';
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -43,6 +44,8 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+
+  const [isSignIn, setIsSignIn] = useState(false);
 
   const [signInEmail, setSignInEmail] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
@@ -85,77 +88,114 @@ export default function LoginPage() {
     // associated with the user's UID after successful signup.
   };
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (!isUserLoading && user)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-100 to-blue-100">
         <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-600"></div>
       </div>
     );
   }
+  
+  const FormInput = ({icon, type, placeholder, value, onChange}: {icon: React.ReactNode, type:string, placeholder: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void}) => (
+     <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400">
+            {icon}
+        </div>
+        <Input type={type} placeholder={placeholder} value={value} onChange={onChange} required className="pl-10 bg-green-50/50 border-green-200 focus:bg-white"/>
+    </div>
+  )
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-blue-50 p-4 font-body">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex overflow-hidden min-h-[600px]">
-        
-        {/* Left Panel: Sign In */}
-        <div className="w-1/2 p-8 flex flex-col justify-center">
-            <form onSubmit={handleSignIn} className="space-y-4">
-                <h1 className="text-3xl font-bold text-green-800 text-center">Welcome Back</h1>
-                <p className="text-center text-gray-600 mb-6">Sign in to access your personal health dashboard.</p>
+        <div className={cn("relative w-full max-w-4xl min-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-in-out", 
+            isSignIn ? " " : " "
+        )}>
+            
+            {/* Sign Up Form */}
+            <div className={cn("absolute top-0 left-0 h-full w-1/2 flex items-center justify-center transition-all duration-700 ease-in-out",
+                isSignIn ? "translate-x-full opacity-0 z-10" : "translate-x-0 opacity-100 z-20"
+            )}>
+                <form onSubmit={handleSignUp} className="w-full px-8 space-y-4">
+                    <div className='text-center mb-6'>
+                        <h1 className="text-3xl font-bold text-green-800">Get Your Health Checked</h1>
+                        <p className="text-sm text-gray-500">Create an account to start your wellness journey.</p>
+                    </div>
 
-                <div className="flex justify-center my-4">
-                  <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
-                      <GoogleIcon />
-                      <span className="ml-2">Sign in with Google</span>
-                  </Button>
+                    <FormInput icon={<User />} type="text" placeholder="Username" value={signUpName} onChange={e => setSignUpName(e.target.value)} />
+                    <FormInput icon={<Mail />} type="email" placeholder="Email" value={signUpEmail} onChange={e => setSignUpEmail(e.target.value)} />
+                    <FormInput icon={<Lock />} type="password" placeholder="Password" value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} />
+
+                    <div className="grid grid-cols-3 gap-2 pt-2">
+                        <FormInput icon={<Calendar />} type="number" placeholder="Age" value={signUpAge} onChange={e => setSignUpAge(e.target.value)} />
+                        <FormInput icon={<GitCommitHorizontal className="rotate-90"/>} type="number" placeholder="Height (cm)" value={signUpHeight} onChange={e => setSignUpHeight(e.target.value)} />
+                        <FormInput icon={<Weight />} type="number" placeholder="Weight (kg)" value={signUpWeight} onChange={e => setSignUpWeight(e.target.value)} />
+                    </div>
+
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white !mt-6" type="submit">Sign Up</Button>
+                </form>
+            </div>
+
+             {/* Sign In Form */}
+            <div className={cn("absolute top-0 left-0 h-full w-1/2 flex items-center justify-center transition-all duration-700 ease-in-out",
+                isSignIn ? "translate-x-full opacity-100 z-20" : "translate-x-0 opacity-0 z-10"
+            )}>
+                <form onSubmit={handleSignIn} className="w-full px-8 space-y-4">
+                    <div className='text-center mb-6'>
+                        <h1 className="text-3xl font-bold text-green-800">Welcome Back</h1>
+                        <p className="text-sm text-gray-500">Sign in to continue managing your health.</p>
+                    </div>
+                    
+                    <div className="flex justify-center my-4">
+                        <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
+                            <GoogleIcon />
+                            <span className="ml-2">Sign in with Google</span>
+                        </Button>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="flex-grow border-t border-gray-300"></div>
+                        <span className="flex-shrink mx-4 text-gray-400 text-sm">or with email</span>
+                        <div className="flex-grow border-t border-gray-300"></div>
+                    </div>
+
+                    <FormInput icon={<Mail />} type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} />
+                    <FormInput icon={<Lock />} type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} />
+                    
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white !mt-6" type="submit">Sign In</Button>
+                </form>
+            </div>
+
+            {/* Overlay */}
+            <div className={cn("absolute top-0 left-0 h-full w-1/2 bg-green-500 rounded-2xl shadow-2xl overflow-hidden text-white flex items-center justify-center transition-all duration-700 ease-in-out z-30", 
+                isSignIn ? "translate-x-0 rounded-r-2xl" : "translate-x-full rounded-l-2xl"
+            )}>
+                 <div className={cn("absolute h-full w-full flex items-center justify-center text-center transition-all duration-700 ease-in-out p-8",
+                    isSignIn ? "translate-x-full" : "translate-x-0 "
+                )}>
+                    <div className="space-y-4">
+                        <HeartPulse className="w-16 h-16 mx-auto"/>
+                        <h1 className="text-3xl font-bold">Already a Member?</h1>
+                        <p>Sign in to access your personal health dashboard.</p>
+                        <Button variant="outline" onClick={() => setIsSignIn(true)} className="bg-transparent border-white text-white hover:bg-white/20">
+                            Sign In
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex items-center">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="flex-shrink mx-4 text-gray-400">or</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
+                 <div className={cn("absolute h-full w-full flex items-center justify-center text-center transition-all duration-700 ease-in-out p-8",
+                    isSignIn ? "translate-x-0" : "-translate-x-full"
+                )}>
+                    <div className="space-y-4">
+                        <HeartPulse className="w-16 h-16 mx-auto"/>
+                        <h1 className="text-3xl font-bold">New Here?</h1>
+                        <p>Create an account to begin your health journey.</p>
+                        <Button variant="outline" onClick={() => setIsSignIn(false)} className="bg-transparent border-white text-white hover:bg-white/20">
+                            Sign Up
+                        </Button>
+                    </div>
                 </div>
-                
-                <Input type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required className="bg-green-50/50 border-green-200"/>
-                <Input type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required className="bg-green-50/50 border-green-200"/>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Sign In</Button>
-            </form>
+            </div>
+
         </div>
-
-        {/* Right Panel: Sign Up */}
-        <div className="w-1/2 p-8 flex flex-col justify-center bg-gradient-to-br from-green-500 to-blue-500 text-white">
-            <form onSubmit={handleSignUp} className="space-y-3">
-                <div className='text-center mb-4'>
-                    <HeartPulse className="w-12 h-12 mb-2 mx-auto"/>
-                    <h1 className="text-3xl font-bold">New User?</h1>
-                    <p className="text-sm">Create an account to start your wellness journey.</p>
-                </div>
-                
-                <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-200"/>
-                    <Input type="text" placeholder="Username" value={signUpName} onChange={e => setSignUpName(e.target.value)} required className="pl-10 bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                </div>
-                <Input type="email" placeholder="Email" value={signUpEmail} onChange={e => setSignUpEmail(e.target.value)} required className="bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                <Input type="password" placeholder="Password" value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} required className="bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                
-                <div className="grid grid-cols-3 gap-2">
-                    <div className="relative">
-                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-200"/>
-                        <Input type="number" placeholder="Age" value={signUpAge} onChange={e => setSignUpAge(e.target.value)} required className="pl-10 bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                    </div>
-                     <div className="relative">
-                        <GitCommitHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-200 rotate-90"/>
-                        <Input type="number" placeholder="Height (cm)" value={signUpHeight} onChange={e => setSignUpHeight(e.target.value)} required className="pl-10 bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                    </div>
-                     <div className="relative">
-                        <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-200"/>
-                        <Input type="number" placeholder="Weight (kg)" value={signUpWeight} onChange={e => setSignUpWeight(e.target.value)} required className="pl-10 bg-white/20 text-white placeholder:text-gray-200 border-white/30"/>
-                    </div>
-                </div>
-
-                <Button variant="outline" className="w-full bg-transparent border-white text-white hover:bg-white/20" type="submit">Sign Up</Button>
-            </form>
-        </div>
-      </div>
     </div>
   );
-}
+
+    
