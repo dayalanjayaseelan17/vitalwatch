@@ -89,5 +89,21 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId) && isUpdatingValidProfile();
       allow delete: if isExistingOwner(userId);
     }
+
+    /**
+     * @description Rules for a user's medicine documents. Only the owner can manage their own medicines.
+     * @path /users/{userId}/medicines/{medicineId}
+     */
+    match /users/{userId}/medicines/{medicineId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    /**
+     * @description Rules for a user's daily medicine log. Only the owner can read or write their logs.
+     * @path /users/{userId}/medicineLog/{date}
+     */
+    match /users/{userId}/medicineLog/{date} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }
