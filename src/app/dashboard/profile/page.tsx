@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -57,7 +57,7 @@ export default function ProfilePage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [newPhotoDataUrl, setNewPhotoDataUrl] = useState<string | null>(null);
 
-  const webcamRef = React.useRef<Webcam>(null);
+  const webcamRef = useRef<Webcam>(null);
 
   const docRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -419,3 +419,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
