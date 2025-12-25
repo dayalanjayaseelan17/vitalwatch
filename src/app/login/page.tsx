@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -101,10 +102,33 @@ export default function LoginPage() {
         "relative w-full max-w-4xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden",
       )}>
         
+        {/* Sign In Form Container */}
+        <div className={cn(
+            "absolute top-0 left-0 h-full w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out z-20",
+            isSignUp && "translate-x-full opacity-0"
+        )}>
+            <form onSubmit={handleSignIn} className="space-y-4">
+                <h1 className="text-3xl font-bold text-green-800 text-center">Welcome Back</h1>
+                <p className="text-center text-gray-600 mb-6">Sign in to continue managing your health.</p>
+
+                <div className="flex justify-center my-4">
+                  <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
+                      <GoogleIcon />
+                      <span className="ml-2">Sign in with Google</span>
+                  </Button>
+                </div>
+                <div className="text-center text-gray-400">or</div>
+                
+                <Input type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
+                <Input type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Sign In</Button>
+            </form>
+        </div>
+
         {/* Sign Up Form Container */}
         <div className={cn(
             "absolute top-0 left-0 h-full w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out",
-            isSignUp ? 'translate-x-full opacity-100 z-20' : 'translate-x-0 opacity-0 z-10'
+            isSignUp ? "translate-x-0 opacity-100 z-20" : "-translate-x-full opacity-0"
         )}>
             <form onSubmit={handleSignUp} className="space-y-3">
                 <h1 className="text-3xl font-bold text-green-800 text-center">Get Your Health Checked</h1>
@@ -136,29 +160,6 @@ export default function LoginPage() {
             </form>
         </div>
         
-        {/* Sign In Form Container */}
-        <div className={cn(
-            "absolute top-0 left-0 h-full w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out",
-            isSignUp ? 'translate-x-0 opacity-0 z-10' : 'translate-x-0 opacity-100 z-20'
-        )}>
-            <form onSubmit={handleSignIn} className="space-y-4">
-                <h1 className="text-3xl font-bold text-green-800 text-center">Welcome Back</h1>
-                <p className="text-center text-gray-600 mb-6">Sign in to continue managing your health.</p>
-
-                <div className="flex justify-center my-4">
-                  <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
-                      <GoogleIcon />
-                      <span className="ml-2">Sign in with Google</span>
-                  </Button>
-                </div>
-                <div className="text-center text-gray-400">or</div>
-                
-                <Input type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
-                <Input type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Sign In</Button>
-            </form>
-        </div>
-        
         {/* Overlay Container */}
         <div className={cn(
             "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
@@ -168,11 +169,11 @@ export default function LoginPage() {
                 "relative h-full w-[200%] bg-gradient-to-br from-green-500 to-blue-500 transition-transform duration-700 ease-in-out",
                 isSignUp ? "translate-x-1/2" : "translate-x-0"
             )}>
-                {/* Sign Up Overlay */}
+                {/* Sign In Overlay Content */}
                 <div className={cn(
-                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-opacity duration-700 ease-in-out",
+                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-all duration-700 ease-in-out",
                     "left-0",
-                    isSignUp ? "opacity-0" : "opacity-100"
+                    isSignUp ? "-translate-x-1/4 opacity-0" : "translate-x-0 opacity-100"
                 )}>
                     <HeartPulse className="w-16 h-16 mb-4"/>
                     <h1 className="text-3xl font-bold">New Here?</h1>
@@ -182,11 +183,11 @@ export default function LoginPage() {
                     </Button>
                 </div>
                 
-                {/* Sign In Overlay */}
+                {/* Sign Up Overlay Content */}
                 <div className={cn(
-                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-opacity duration-700 ease-in-out",
+                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-all duration-700 ease-in-out",
                     "right-0",
-                    isSignUp ? "opacity-100" : "opacity-0"
+                    isSignUp ? "translate-x-0 opacity-100" : "translate-x-1/4 opacity-0"
                 )}>
                     <h1 className="text-3xl font-bold">Already a Member?</h1>
                     <p className="my-4">Sign in to access your personal health dashboard.</p>
@@ -201,3 +202,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
