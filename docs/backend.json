@@ -1,0 +1,121 @@
+{
+  "entities": {
+    "QuickHealthCheckDetails": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuickHealthCheckDetails",
+      "type": "object",
+      "description": "Stores basic health details entered by a user for a quick, anonymous health check.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Quick Health Check Details entry."
+        },
+        "age": {
+          "type": "number",
+          "description": "Age of the user."
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender of the user."
+        },
+        "height": {
+          "type": "number",
+          "description": "Height of the user in centimeters."
+        },
+        "weight": {
+          "type": "number",
+          "description": "Weight of the user in kilograms."
+        },
+        "symptoms": {
+          "type": "array",
+          "description": "List of symptoms reported by the user.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "age",
+        "gender",
+        "height",
+        "weight"
+      ]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Stores user profile information after they sign up.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User Profile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "age": {
+          "type": "number",
+          "description": "Age of the user."
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender of the user."
+        },
+        "height": {
+          "type": "number",
+          "description": "Height of the user in centimeters."
+        },
+        "weight": {
+          "type": "number",
+          "description": "Weight of the user in kilograms."
+        },
+        "symptoms": {
+          "type": "array",
+          "description": "List of symptoms reported by the user.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "age",
+        "gender",
+        "height",
+        "weight"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/profile",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information for authenticated users.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, obtained from Firebase Authentication."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to accommodate both anonymous health checks and authenticated user profiles. Since the 'Quick Health Check' feature requires no authentication or data persistence, it does not interact with Firestore. Only the 'Sign In / Sign Up' flow utilizes Firestore to store user profiles. This design segregates authenticated data from anonymous data, simplifying security rules and enhancing privacy.\n\nThe primary collection is `/users/{userId}/profile` which stores authenticated user profile data. This path-based ownership model ensures that only the authenticated user can access their own profile data, providing a secure and straightforward authorization mechanism. The structure supports the required QAPs by ensuring that only authenticated users have corresponding data in Firestore. No `list` operations are performed on the `/users/{userId}/profile` collection, as the application is designed for single-user access to their own data only. Authorization Independence is achieved inherently through the path-based ownership, eliminating the need for denormalization or `get()` calls in security rules."
+  }
+}

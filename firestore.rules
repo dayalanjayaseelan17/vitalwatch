@@ -1,0 +1,93 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model where each user has exclusive control over their own data. The design assumes a clear separation between unauthenticated "quick check" users, who do not interact with Firestore, and authenticated users, whose data is stored and protected. The default security posture is deny-all, and access is only granted explicitly based on a user's authenticated UID.
+ *
+ * Data Structure: All authenticated user data is stored within a top-level `users` collection. Each user's data is isolated under their unique user ID (`userId`), forming a private data tree. A user's profile is a document located in a subcollection at `/users/{userId}/profile/{profileId}`.
+ *
+ * Key Security Decisions:
+ * - Strict Ownership: A user can only read or write data within their own `/users/{userId}/` path. Cross-user access is completely disallowed.
+ * - No Public Data: There are no globally readable collections. All data is considered private to its owner.
+ * - User Listing Disabled: It is not possible to list all documents in the top-level `users` collection, preventing enumeration of the application's user base.
+ * - Profile Listing Disabled: Based on the application design, users are not permitted to list their own profile documents. Access is restricted to direct reads (`get`) of a known profile document.
+ *
+ * Denormalization for Authorization: This ruleset relies on path-based security. The user's UID is part of the document path, which is the most performant and secure way to implement ownership rules. This avoids the need for costly `get()` calls to other documents for authorization checks.
+ *
+ * Structural Segregation: The application's core design separates anonymous and authenticated user flows. Anonymous user activity (Quick Health Check) does not touch the database, completely segregating it from the private, authenticated user data stored in Firestore. This is an ideal security pattern.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId from the path.
+     * This is the foundation of the user-ownership model.
+     * @param userId The user ID from the document path.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for ownership on an existing document. Used for update and delete operations
+     * to prevent acting on documents that do not exist.
+     * @param userId The user ID from the document path.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates incoming data for a new profile document.
+     * In Prototyping Mode, this validation is limited to fields critical for
+     * authorization and relational integrity.
+     */
+    function isCreatingValidProfile(userId, profileId) {
+      // The new document's internal `id` must match the document ID in the path.
+      let isIdConsistent = request.resource.data.id == profileId;
+      // The new document's `email` must match the authenticated user's email.
+      let isEmailConsistent = request.resource.data.email == request.auth.token.email;
+      return isOwner(userId) && isIdConsistent && isEmailConsistent;
+    }
+
+    /**
+     * Validates an update to a profile document.
+     * Enforces immutability of critical, identity-related fields.
+     */
+    function isUpdatingValidProfile() {
+      // The document's internal `id` cannot be changed after creation.
+      let isIdImmutable = request.resource.data.id == resource.data.id;
+      // The user's `email` cannot be changed after creation.
+      let isEmailImmutable = request.resource.data.email == resource.data.email;
+      return isIdImmutable && isEmailImmutable;
+    }
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Rules for a user's private profile document. Only the owner can create, read, update, or delete their own profile.
+     * @path /users/{userId}/profile/{profileId}
+     * @allow (create) An authenticated user ('user123') creating their profile at `/users/user123/profile/main_profile`.
+     * @deny (get) An authenticated user ('user456') trying to read another user's profile at `/users/user123/profile/main_profile`.
+     * @principle Restricts access to a user's own data tree (Ownership Model).
+     */
+    match /users/{userId}/profile/{profileId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Per application design, listing profiles is not allowed.
+      allow create: if isCreatingValidProfile(userId, profileId);
+      allow update: if isExistingOwner(userId) && isUpdatingValidProfile();
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
