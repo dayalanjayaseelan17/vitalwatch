@@ -151,7 +151,7 @@ export default function DashboardPage() {
           <DashboardButton 
               icon={<Pill className="w-12 h-12 md:w-16 md:h-16" />}
               label="Medicine Tracker"
-              href="#"
+              href="/dashboard/medicine-tracker"
               isActive={activeButton === 'medicine'}
               onClick={() => setActiveButton('medicine')}
           />

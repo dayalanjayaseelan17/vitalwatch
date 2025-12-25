@@ -120,6 +120,82 @@
         "bloodGroup",
         "allergies"
       ]
+    },
+    "Medicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medicine",
+      "type": "object",
+      "description": "Stores details about a single medicine a user is tracking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the medicine entry."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the medicine."
+        },
+        "dosage": {
+          "type": "string",
+          "description": "Dosage instructions (e.g., '1 tablet', '5ml')."
+        },
+        "schedule": {
+          "type": "object",
+          "properties": {
+            "morning": { "type": "boolean" },
+            "afternoon": { "type": "boolean" },
+            "night": { "type": "boolean" }
+          }
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The start date for taking the medicine."
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The end date for taking the medicine (optional)."
+        },
+        "isOngoing": {
+            "type": "boolean",
+            "description": "True if the medicine is taken indefinitely."
+        },
+        "reminders": {
+            "type": "boolean",
+            "description": "Whether reminders are enabled for this medicine."
+        }
+      },
+      "required": [ "id", "name", "dosage", "schedule", "startDate" ]
+    },
+    "MedicineLog": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "MedicineLog",
+        "type": "object",
+        "description": "Logs the status of a specific medicine dose for a given day.",
+        "properties": {
+            "date": {
+                "type": "string",
+                "format": "date",
+                "description": "The date of the log entry (YYYY-MM-DD)."
+            },
+            "morning": {
+                "type": "string",
+                "enum": ["taken", "missed", "pending"],
+                "description": "Status for the morning dose."
+            },
+            "afternoon": {
+                "type": "string",
+                "enum": ["taken", "missed", "pending"],
+                "description": "Status for the afternoon dose."
+            },
+            "night": {
+                "type": "string",
+                "enum": ["taken", "missed", "pending"],
+                "description": "Status for the night dose."
+            }
+        },
+        "required": ["date"]
     }
   },
   "auth": {
@@ -146,6 +222,26 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}",
+        "definition": {
+          "entityName": "Medicine",
+          "schema": {
+            "$ref": "#/backend/entities/Medicine"
+          },
+          "description": "Stores individual medicine details for a user."
+        }
+      },
+      {
+          "path": "/users/{userId}/medicineLog/{date}",
+          "definition": {
+              "entityName": "MedicineLog",
+              "schema": {
+                  "$ref": "#/backend/entities/MedicineLog"
+              },
+              "description": "Stores the daily log of medicine intake for a user, with the document ID being the date (YYYY-MM-DD)."
+          }
       }
     ],
     "reasoning": "The Firestore structure is designed to accommodate both anonymous health checks and authenticated user profiles. Since the 'Quick Health Check' feature requires no authentication or data persistence, it does not interact with Firestore. Only the 'Sign In / Sign Up' flow utilizes Firestore to store user profiles. This design segregates authenticated data from anonymous data, simplifying security rules and enhancing privacy.\n\nThe primary collection is `/users/{userId}/profile` which stores authenticated user profile data in a single document named 'main'. This path-based ownership model ensures that only the authenticated user can access their own profile data, providing a secure and straightforward authorization mechanism. The structure supports the required QAPs by ensuring that only authenticated users have corresponding data in Firestore. No `list` operations are performed on the `/users/{userId}/profile` collection, as the application is designed for single-user access to their own data only. Authorization Independence is achieved inherently through the path-based ownership, eliminating the need for denormalization or `get()` calls in security rules."
