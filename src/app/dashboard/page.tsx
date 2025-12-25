@@ -37,29 +37,38 @@ const DashboardButton = ({
 }) => {
   return (
     <Link href={href} passHref>
-        <div 
-            onClick={onClick}
-            className="flex flex-col items-center justify-center gap-3 cursor-pointer group"
+      <div
+        onClick={onClick}
+        className="flex flex-col items-center justify-center gap-3 cursor-pointer group"
+      >
+        <div
+          className={cn(
+            "relative flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-green-500 bg-white text-green-600 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:scale-105 group-hover:border-green-600 overflow-hidden",
+            isActive && "text-white scale-110 shadow-xl"
+          )}
         >
-            <div className={cn(
-                "relative flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-green-500 bg-white text-green-600 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:scale-105 group-hover:border-green-600",
-                isActive && "bg-green-600 text-white scale-110 shadow-xl"
-            )}>
-                <div className="absolute inset-0 rounded-full bg-green-600 transition-transform duration-300 ease-in-out scale-0 origin-center"
-                    style={{ transform: isActive ? 'scale(1)' : 'scale(0)' }}
-                ></div>
-                <div className={cn("relative z-10 transition-transform duration-300", isActive && "scale-110")}>
-                    {icon}
-                </div>
-            </div>
-            <span className={cn(
-                "font-semibold text-gray-600 transition-colors duration-300 group-hover:text-green-700",
-                isActive && "text-green-700 font-bold"
-                )}
-            >
-                {label}
-            </span>
+          {/* Bottom-to-top fill element */}
+          <div
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-full w-full bg-green-600 transition-transform duration-500 ease-in-out origin-bottom",
+              isActive ? 'scale-y-100' : 'scale-y-0'
+            )}
+          ></div>
+          
+          {/* Icon and content */}
+          <div className="relative z-10 transition-transform duration-300">
+            {icon}
+          </div>
         </div>
+        <span
+          className={cn(
+            "font-semibold text-gray-600 transition-colors duration-300 group-hover:text-green-700",
+            isActive && "text-green-700 font-bold"
+          )}
+        >
+          {label}
+        </span>
+      </div>
     </Link>
   );
 };
