@@ -105,7 +105,7 @@ PROBLEM DESCRIPTION:
       output: {
         schema: DiagnoseSymptomsOutputSchema,
       },
-      model: "googleai/gemini-2.5-flash",
+      model: "gemini-1.5-flash-latest",
       config: {
         temperature: 0.2,
       },

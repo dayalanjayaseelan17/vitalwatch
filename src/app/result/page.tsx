@@ -16,10 +16,9 @@ type RiskLevel = "Green" | "Yellow" | "Red";
 const ResultCard: React.FC<{
   level: RiskLevel;
   analysis: string;
-  guidance: string;
   precautions?: string[];
   nextAction?: string;
-}> = ({ level, analysis, guidance, precautions, nextAction }) => {
+}> = ({ level, analysis, precautions, nextAction }) => {
   const config = {
     Green: {
       bgColor: "bg-green-100",
@@ -27,6 +26,7 @@ const ResultCard: React.FC<{
       borderColor: "border-green-500",
       icon: <ShieldCheck className="h-16 w-16" />,
       title: "Minor Problem",
+      guidance: "This problem looks minor. You can take rest and basic care at home."
     },
     Yellow: {
       bgColor: "bg-yellow-100",
@@ -34,6 +34,7 @@ const ResultCard: React.FC<{
       borderColor: "border-yellow-500",
       icon: <AlertTriangle className="h-16 w-16" />,
       title: "Caution Advised",
+      guidance: "This problem needs attention. Please visit a hospital if possible."
     },
     Red: {
       bgColor: "bg-red-100",
@@ -41,10 +42,11 @@ const ResultCard: React.FC<{
       borderColor: "border-red-500",
       icon: <HeartPulse className="h-16 w-16" />,
       title: "Emergency",
+      guidance: "This is serious. Please go to the nearest hospital immediately."
     },
   };
 
-  const { bgColor, textColor, borderColor, icon, title } = config[level];
+  const { bgColor, textColor, borderColor, icon, title, guidance } = config[level];
 
   return (
     <div
@@ -71,9 +73,9 @@ const ResultCard: React.FC<{
       )}
 
       {/* ✅ Next action */}
-      {nextAction && level !== "Red" && (
-        <p className="mt-4 font-medium">
-          Next step: {nextAction}
+      {nextAction && (
+        <p className="mt-4 font-bold text-center text-lg">
+          {nextAction}
         </p>
       )}
     </div>
@@ -147,7 +149,6 @@ export default function ResultPage() {
           <ResultCard
             level={result.riskLevel}
             analysis={result.analysis}
-            guidance={result.guidance}
             precautions={result.precautions}
             nextAction={result.nextAction}
           />

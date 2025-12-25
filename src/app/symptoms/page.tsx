@@ -25,12 +25,6 @@ export default function SymptomsPage() {
   const [loading, setLoading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-  // Optional fields
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] =useState("");
-
   const webcamRef = useRef<Webcam>(null);
   const router = useRouter();
 
@@ -59,6 +53,11 @@ export default function SymptomsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!description.trim() && !imageDataUrl) {
+      setError("Please describe your problem or upload a photo.");
+      return;
+    }
+    
     if (!description.trim()) {
       setError("Please describe your problem or symptoms.");
       return;
@@ -70,20 +69,6 @@ export default function SymptomsPage() {
     // Save all data to localStorage
     localStorage.setItem("symptomDescription", description);
     
-    // Save optional details if they exist
-    const userDetails = {
-      ...(age && { age }),
-      ...(gender && { gender }),
-      ...(height && { height }),
-      ...(weight && { weight }),
-    };
-
-    if (Object.keys(userDetails).length > 0) {
-      const existingDetailsString = localStorage.getItem("userDetails");
-      const existingDetails = existingDetailsString ? JSON.parse(existingDetailsString) : {};
-      localStorage.setItem("userDetails", JSON.stringify({...existingDetails, ...userDetails}));
-    }
-
     if (imageDataUrl) {
       localStorage.setItem("symptomImage", imageDataUrl);
     } else {
@@ -169,36 +154,13 @@ export default function SymptomsPage() {
                 </button>
               </div>
             )}
-            
-            <div className="space-y-4 pt-4 border-t">
-              <p className="text-center font-semibold text-gray-700">Optional Details</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label htmlFor="age">Age</Label>
-                  <Input id="age" type="number" placeholder="e.g., 35" value={age} onChange={e => setAge(e.target.value)} disabled={loading} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Input id="gender" type="text" placeholder="e.g., Male" value={gender} onChange={e => setGender(e.target.value)} disabled={loading} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="height">Height (cm)</Label>
-                  <Input id="height" type="number" placeholder="e.g., 175" value={height} onChange={e => setHeight(e.target.value)} disabled={loading} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="weight">Weight (kg)</Label>
-                  <Input id="weight" type="number" placeholder="e.g., 70" value={weight} onChange={e => setWeight(e.target.value)} disabled={loading} />
-                </div>
-              </div>
-            </div>
-
 
             {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
             <Button
               type="submit"
               disabled={loading || !description.trim()}
-              className="w-full text-lg h-12 bg-green-600 hover:bg-green-700"
+              className="w-full text-lg h-12 bg-green-600 hover:bg-green-700 mt-6"
             >
               {loading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Analyzing...</> : "Check Symptoms"}
             </Button>
@@ -208,5 +170,3 @@ export default function SymptomsPage() {
     </div>
   );
 }
-
-  
