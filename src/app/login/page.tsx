@@ -98,32 +98,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-blue-50 p-4 font-body">
       <div className={cn(
-        "relative w-full max-w-4xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-in-out",
-        "grid grid-cols-1 md:grid-cols-2"
+        "relative w-full max-w-4xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden",
       )}>
-
-        {/* Form Container */}
-        <div className="p-8 flex flex-col justify-center">
-            {/* Sign In Form */}
-            <form onSubmit={handleSignIn} className={cn("transition-opacity duration-300 ease-in-out space-y-4", isSignUp ? 'opacity-0 z-0' : 'opacity-100 z-10' )}>
-                <h1 className="text-3xl font-bold text-green-800 text-center">Welcome Back</h1>
-                <p className="text-center text-gray-600 mb-6">Sign in to continue managing your health.</p>
-
-                <div className="flex justify-center my-4">
-                  <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
-                      <GoogleIcon />
-                      <span className="ml-2">Sign in with Google</span>
-                  </Button>
-                </div>
-                <div className="text-center text-gray-400">or</div>
-                
-                <Input type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
-                <Input type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Sign In</Button>
-            </form>
-
-            {/* Sign Up Form */}
-            <form onSubmit={handleSignUp} className={cn("absolute top-0 left-0 h-full w-full md:w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out space-y-3", isSignUp ? 'opacity-100 z-10' : 'opacity-0 z-0' )}>
+        
+        {/* Sign Up Form Container */}
+        <div className={cn(
+            "absolute top-0 left-0 h-full w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out",
+            isSignUp ? 'translate-x-full opacity-100 z-20' : 'translate-x-0 opacity-0 z-10'
+        )}>
+            <form onSubmit={handleSignUp} className="space-y-3">
                 <h1 className="text-3xl font-bold text-green-800 text-center">Get Your Health Checked</h1>
                 <p className="text-center text-gray-600 text-xs mb-2">Create an account to start your wellness journey.</p>
                 
@@ -153,40 +136,62 @@ export default function LoginPage() {
             </form>
         </div>
         
+        {/* Sign In Form Container */}
+        <div className={cn(
+            "absolute top-0 left-0 h-full w-1/2 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out",
+            isSignUp ? 'translate-x-0 opacity-0 z-10' : 'translate-x-0 opacity-100 z-20'
+        )}>
+            <form onSubmit={handleSignIn} className="space-y-4">
+                <h1 className="text-3xl font-bold text-green-800 text-center">Welcome Back</h1>
+                <p className="text-center text-gray-600 mb-6">Sign in to continue managing your health.</p>
+
+                <div className="flex justify-center my-4">
+                  <Button variant="outline" onClick={handleGoogleSignIn} className="w-full max-w-xs">
+                      <GoogleIcon />
+                      <span className="ml-2">Sign in with Google</span>
+                  </Button>
+                </div>
+                <div className="text-center text-gray-400">or</div>
+                
+                <Input type="email" placeholder="Email" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
+                <Input type="password" placeholder="Password" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Sign In</Button>
+            </form>
+        </div>
+        
         {/* Overlay Container */}
         <div className={cn(
-            "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-20",
+            "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-50",
             isSignUp && "-translate-x-full"
         )}>
             <div className={cn(
-                "relative -left-full h-full w-[200%] bg-gradient-to-br from-green-500 to-blue-500 transition-transform duration-700 ease-in-out",
-                isSignUp && "translate-x-1/2"
+                "relative h-full w-[200%] bg-gradient-to-br from-green-500 to-blue-500 transition-transform duration-700 ease-in-out",
+                isSignUp ? "translate-x-1/2" : "translate-x-0"
             )}>
-                {/* Overlay Panels */}
+                {/* Sign Up Overlay */}
                 <div className={cn(
-                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-transform duration-700 ease-in-out",
+                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-opacity duration-700 ease-in-out",
                     "left-0",
-                    isSignUp && "translate-x-0"
+                    isSignUp ? "opacity-0" : "opacity-100"
                 )}>
-                    {/* Sign In Overlay */}
-                    <h1 className="text-3xl font-bold">Already a Member?</h1>
-                    <p className="my-4">Sign in to access your personal health dashboard.</p>
-                    <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/20" onClick={() => setIsSignUp(false)}>
-                        Sign In
-                    </Button>
-                </div>
-
-                <div className={cn(
-                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-transform duration-700 ease-in-out",
-                    "right-0",
-                    isSignUp ? "-translate-x-full" : "-translate-x-0"
-                )}>
-                    {/* Sign Up Overlay */}
-                     <HeartPulse className="w-16 h-16 mb-4"/>
+                    <HeartPulse className="w-16 h-16 mb-4"/>
                     <h1 className="text-3xl font-bold">New Here?</h1>
                     <p className="my-4">Track your health, check symptoms, and manage your wellness in one place.</p>
                     <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/20" onClick={() => setIsSignUp(true)}>
                         Sign Up
+                    </Button>
+                </div>
+                
+                {/* Sign In Overlay */}
+                <div className={cn(
+                    "absolute top-0 flex flex-col items-center justify-center px-10 text-center h-full w-1/2 text-white transition-opacity duration-700 ease-in-out",
+                    "right-0",
+                    isSignUp ? "opacity-100" : "opacity-0"
+                )}>
+                    <h1 className="text-3xl font-bold">Already a Member?</h1>
+                    <p className="my-4">Sign in to access your personal health dashboard.</p>
+                    <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/20" onClick={() => setIsSignUp(false)}>
+                        Sign In
                     </Button>
                 </div>
             </div>
