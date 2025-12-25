@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,9 +7,18 @@ import Link from 'next/link';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
-import { User, CalendarCheck, Pill, Activity } from 'lucide-react';
+import { User, CalendarCheck, Pill, Activity, HeartPulse, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 type ActiveButton = 'profile' | 'daily' | 'medicine' | 'health' | null;
 
@@ -84,56 +94,76 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-blue-50 p-4 font-body">
-      <div className="absolute top-6 right-6 flex items-center gap-4">
-        <div className="text-right">
-            <p className="font-semibold text-gray-700">Welcome, {user.displayName || user.email}</p>
-        </div>
-        <Avatar>
-            <AvatarImage src={user.photoURL || ''} alt="User avatar" />
-            <AvatarFallback className="bg-green-200 text-green-700 font-bold">
-                {getInitials(user.email)}
-            </AvatarFallback>
-        </Avatar>
-        <Button
-          onClick={handleSignOut}
-          variant="outline"
-          className="bg-white/50 border-red-300 text-red-500 hover:bg-red-500 hover:text-white"
-        >
-          Sign Out
-        </Button>
-      </div>
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-green-50 via-gray-50 to-blue-50 font-body">
+      <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur-sm">
+          <div className="container flex h-16 items-center justify-between">
+              <Link href="/" className="flex items-center gap-2">
+                  <HeartPulse className="h-7 w-7 text-green-600"/>
+                  <span className="font-bold text-lg text-gray-700 hidden sm:inline">Swasthya Margdarshan</span>
+              </Link>
+              
+              <div className="flex items-center gap-4">
+                  <Button asChild variant="ghost" className="text-green-700 hover:bg-green-100 hover:text-green-800">
+                      <Link href="/symptoms">Check Symptoms</Link>
+                  </Button>
+                  
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Avatar className="cursor-pointer">
+                              <AvatarImage src={user.photoURL || ''} alt="User avatar" />
+                              <AvatarFallback className="bg-green-200 text-green-700 font-bold">
+                                  {getInitials(user.email)}
+                              </AvatarFallback>
+                          </Avatar>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>
+                              <p className="font-medium">My Account</p>
+                              <p className="text-xs text-gray-500 font-normal">{user.displayName || user.email}</p>
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={handleSignOut} className="text-red-500 cursor-pointer">
+                              <LogOut className="mr-2 h-4 w-4"/>
+                              <span>Sign Out</span>
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+              </div>
+          </div>
+      </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16">
-        <DashboardButton 
-            icon={<User className="w-12 h-12 md:w-16 md:h-16" />}
-            label="Profile"
-            href="#"
-            isActive={activeButton === 'profile'}
-            onClick={() => setActiveButton('profile')}
-        />
-        <DashboardButton 
-            icon={<CalendarCheck className="w-12 h-12 md:w-16 md:h-16" />}
-            label="Daily Tracker"
-            href="#"
-            isActive={activeButton === 'daily'}
-            onClick={() => setActiveButton('daily')}
-        />
-        <DashboardButton 
-            icon={<Pill className="w-12 h-12 md:w-16 md:h-16" />}
-            label="Medicine Tracker"
-            href="#"
-            isActive={activeButton === 'medicine'}
-            onClick={() => setActiveButton('medicine')}
-        />
-        <DashboardButton 
-            icon={<Activity className="w-12 h-12 md:w-16 md:h-16" />}
-            label="Health Bar"
-            href="#"
-            isActive={activeButton === 'health'}
-            onClick={() => setActiveButton('health')}
-        />
-      </div>
+      <main className="flex flex-1 flex-col items-center justify-center p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16">
+          <DashboardButton 
+              icon={<User className="w-12 h-12 md:w-16 md:h-16" />}
+              label="Profile"
+              href="#"
+              isActive={activeButton === 'profile'}
+              onClick={() => setActiveButton('profile')}
+          />
+          <DashboardButton 
+              icon={<CalendarCheck className="w-12 h-12 md:w-16 md:h-16" />}
+              label="Daily Tracker"
+              href="#"
+              isActive={activeButton === 'daily'}
+              onClick={() => setActiveButton('daily')}
+          />
+          <DashboardButton 
+              icon={<Pill className="w-12 h-12 md:w-16 md:h-16" />}
+              label="Medicine Tracker"
+              href="#"
+              isActive={activeButton === 'medicine'}
+              onClick={() => setActiveButton('medicine')}
+          />
+          <DashboardButton 
+              icon={<Activity className="w-12 h-12 md:w-16 md:h-16" />}
+              label="Health Bar"
+              href="#"
+              isActive={activeButton === 'health'}
+              onClick={() => setActiveButton('health')}
+          />
+        </div>
+      </main>
     </div>
   );
 }
