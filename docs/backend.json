@@ -50,12 +50,20 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the User Profile entity."
+          "description": "Unique identifier for the User Profile, matching the Firebase Auth UID."
         },
         "email": {
           "type": "string",
           "description": "Email address of the user.",
           "format": "email"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "photoURL": {
+            "type": "string",
+            "description": "URL of the user's profile photo, hosted in Firebase Storage."
         },
         "age": {
           "type": "number",
@@ -73,21 +81,44 @@
           "type": "number",
           "description": "Weight of the user in kilograms."
         },
-        "symptoms": {
+        "bloodGroup": {
+          "type": "string",
+          "description": "User's blood group (e.g., A+, O-)."
+        },
+        "existingConditions": {
           "type": "array",
-          "description": "List of symptoms reported by the user.",
+          "description": "List of pre-existing medical conditions.",
           "items": {
             "type": "string"
           }
+        },
+        "otherCondition": {
+            "type": "string",
+            "description": "A user-specified condition if 'Other' is selected."
+        },
+        "allergies": {
+          "type": "string",
+          "description": "Indicates if the user has allergies ('Yes' or 'No')."
+        },
+        "allergiesDetails": {
+          "type": "string",
+          "description": "Details about the user's allergies if they have any."
+        },
+        "currentMedications": {
+          "type": "string",
+          "description": "A list of current medications the user is taking."
         }
       },
       "required": [
         "id",
         "email",
+        "fullName",
         "age",
         "gender",
         "height",
-        "weight"
+        "weight",
+        "bloodGroup",
+        "allergies"
       ]
     }
   },
@@ -101,13 +132,13 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}/profile",
+        "path": "/users/{userId}/profile/main",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information for authenticated users.",
+          "description": "Stores the main user profile information for authenticated users.",
           "params": [
             {
               "name": "userId",
@@ -117,6 +148,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to accommodate both anonymous health checks and authenticated user profiles. Since the 'Quick Health Check' feature requires no authentication or data persistence, it does not interact with Firestore. Only the 'Sign In / Sign Up' flow utilizes Firestore to store user profiles. This design segregates authenticated data from anonymous data, simplifying security rules and enhancing privacy.\n\nThe primary collection is `/users/{userId}/profile` which stores authenticated user profile data. This path-based ownership model ensures that only the authenticated user can access their own profile data, providing a secure and straightforward authorization mechanism. The structure supports the required QAPs by ensuring that only authenticated users have corresponding data in Firestore. No `list` operations are performed on the `/users/{userId}/profile` collection, as the application is designed for single-user access to their own data only. Authorization Independence is achieved inherently through the path-based ownership, eliminating the need for denormalization or `get()` calls in security rules."
+    "reasoning": "The Firestore structure is designed to accommodate both anonymous health checks and authenticated user profiles. Since the 'Quick Health Check' feature requires no authentication or data persistence, it does not interact with Firestore. Only the 'Sign In / Sign Up' flow utilizes Firestore to store user profiles. This design segregates authenticated data from anonymous data, simplifying security rules and enhancing privacy.\n\nThe primary collection is `/users/{userId}/profile` which stores authenticated user profile data in a single document named 'main'. This path-based ownership model ensures that only the authenticated user can access their own profile data, providing a secure and straightforward authorization mechanism. The structure supports the required QAPs by ensuring that only authenticated users have corresponding data in Firestore. No `list` operations are performed on the `/users/{userId}/profile` collection, as the application is designed for single-user access to their own data only. Authorization Independence is achieved inherently through the path-based ownership, eliminating the need for denormalization or `get()` calls in security rules."
   }
 }

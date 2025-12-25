@@ -137,7 +137,7 @@ export default function DashboardPage() {
           <DashboardButton 
               icon={<User className="w-12 h-12 md:w-16 md:h-16" />}
               label="Profile"
-              href="#"
+              href="/dashboard/profile"
               isActive={activeButton === 'profile'}
               onClick={() => setActiveButton('profile')}
           />

@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/input';
 import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { HeartPulse, User, Calendar, GitCommitHorizontal, Weight, Mail, Lock } from 'lucide-react';
-import { Auth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Auth, GoogleAuthProvider, signInWithPopup, UserCredential } from 'firebase/auth';
 import { cn } from '@/lib/utils';
+import { useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
 
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -41,6 +44,7 @@ const initiateGoogleSignIn = (auth: Auth) => {
 
 export default function LoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -83,9 +87,32 @@ export default function LoginPage() {
       toast({ variant: "destructive", title: "Missing fields", description: "Please fill out all fields." });
       return;
     }
+    
+    // We use a separate function to handle the async logic after user creation
+    const handleUserCreation = (userCredential: UserCredential) => {
+      const newUser = userCredential.user;
+      const profileData = {
+        id: newUser.uid,
+        email: signUpEmail,
+        fullName: signUpName,
+        age: parseInt(signUpAge, 10),
+        height: parseInt(signUpHeight, 10),
+        weight: parseInt(signUpWeight, 10),
+      };
+
+      const docRef = doc(firestore, `users/${newUser.uid}/profile`, 'main');
+      setDocumentNonBlocking(docRef, profileData, { merge: true });
+    };
+
+    // Temporarily listen for auth state changes to catch the new user
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (user && user.email === signUpEmail) {
+        handleUserCreation({ user } as UserCredential);
+        unsubscribe(); // Stop listening
+      }
+    });
+
     initiateEmailSignUp(auth, signUpEmail, signUpPassword);
-    // In a real app, you'd save the extra details (name, age, etc.) to Firestore here
-    // associated with the user's UID after successful signup.
   };
 
   if (isUserLoading || (!isUserLoading && user)) {
