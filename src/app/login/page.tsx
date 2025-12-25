@@ -134,8 +134,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-blue-50 p-4 font-body">
-        <div className={cn("relative w-full max-w-4xl min-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-in-out", 
-            isSignIn ? " " : " "
+        <div className={cn("relative w-full max-w-4xl min-h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-in-out" 
         )}>
             
             {/* Sign Up Form */}
@@ -192,7 +191,7 @@ export default function LoginPage() {
             </div>
 
             {/* Overlay */}
-            <div className={cn("absolute top-0 left-0 h-full w-1/2 bg-green-500 rounded-2xl shadow-2xl overflow-hidden text-white flex items-center justify-center transition-all duration-700 ease-in-out z-30", 
+            <div className={cn("absolute top-0 left-0 h-full w-1/2 bg-green-500 rounded-2xl shadow-2xl overflow-hidden text-white flex items-center justify-center transition-all duration-700 ease-in-out z-30 pointer-events-none", 
                 isSignIn ? "translate-x-0 rounded-r-2xl" : "translate-x-full rounded-l-2xl"
             )}>
                  <div className={cn("absolute h-full w-full flex items-center justify-center text-center transition-all duration-700 ease-in-out p-8",
@@ -202,7 +201,7 @@ export default function LoginPage() {
                         <HeartPulse className="w-16 h-16 mx-auto"/>
                         <h1 className="text-3xl font-bold">Already a Member?</h1>
                         <p>Sign in to access your personal health dashboard.</p>
-                        <Button variant="outline" onClick={() => setIsSignIn(true)} className="bg-transparent border-white text-white hover:bg-white/20">
+                        <Button variant="outline" onClick={() => setIsSignIn(true)} className="bg-transparent border-white text-white hover:bg-white/20 pointer-events-auto">
                             Sign In
                         </Button>
                     </div>
@@ -214,7 +213,7 @@ export default function LoginPage() {
                         <HeartPulse className="w-16 h-16 mx-auto"/>
                         <h1 className="text-3xl font-bold">New Here?</h1>
                         <p>Create an account to begin your health journey.</p>
-                        <Button variant="outline" onClick={() => setIsSignIn(false)} className="bg-transparent border-white text-white hover:bg-white/20">
+                        <Button variant="outline" onClick={() => setIsSignIn(false)} className="bg-transparent border-white text-white hover:bg-white/20 pointer-events-auto">
                             Sign Up
                         </Button>
                     </div>
