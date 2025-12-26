@@ -108,7 +108,7 @@ export default function DashboardPage() {
           <div className="container flex h-16 items-center justify-between">
               <Link href="/" className="flex items-center gap-2">
                   <HeartPulse className="h-7 w-7 text-green-600"/>
-                  <span className="font-bold text-lg text-gray-700 hidden sm:inline">Swasthya Margdarshan</span>
+                  <span className="font-bold text-lg text-gray-700 hidden sm:inline">VitalWatch</span>
               </Link>
               
               <div className="flex items-center gap-4">

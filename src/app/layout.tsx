@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'Swasthya Margdarshan',
+  title: 'VitalWatch',
   description: 'Your simple guide to better health.',
 };
 
