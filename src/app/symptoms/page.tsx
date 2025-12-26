@@ -60,15 +60,6 @@ export default function SymptomsPage() {
       return;
     }
 
-    if (!description.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Description Required',
-        description: 'Please describe your problem or symptoms.',
-      });
-      return;
-    }
-
     setLoading(true);
 
     // Save all data to localStorage
@@ -133,7 +124,7 @@ export default function SymptomsPage() {
                 htmlFor="symptom-description"
                 className="font-semibold text-gray-700"
               >
-                Symptom Description*
+                Symptom Description
               </Label>
               <Textarea
                 id="symptom-description"
