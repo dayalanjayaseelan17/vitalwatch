@@ -33,16 +33,18 @@ export type DiagnoseSymptomsInput = z.infer<
 
 const DiagnoseSymptomsOutputSchema = z.object({
   riskLevel: z.enum(["Green", "Yellow", "Red"]),
-  analysis: z
-    .string()
-    .describe("Short, simple explanation in one sentence."),
-  precautions: z
-    .array(z.string())
-    .describe("3–5 simple home care or first-aid steps."),
-  nextAction: z
-    .string()
-    .describe("Clear instruction on what the user should do next."),
+  title: z.string().describe("Short and clear diagnosis title"),
+  summary: z.string().describe("Simple explanation of the condition in plain language"),
+  whyThisResult: z.array(z.string()).describe("List of clear medical reasoning points"),
+  precautions: z.array(z.string()).describe("List of precaution or self-care steps"),
+  nextAction: z.string().describe("Clear instruction telling the user what to do next"),
+  hospitalRequired: z.boolean(),
+  specialist: z.string().describe("e.g., General Physician, Cardiologist, etc."),
+  googleMapsRequired: z.boolean(),
+  googleMapsQuery: z.string().nullable().describe("Text query for Google Maps search or null"),
+  disclaimer: z.string().default("This is not a medical diagnosis. Consult a licensed medical professional."),
 });
+
 
 export type DiagnoseSymptomsOutput = z.infer<
   typeof DiagnoseSymptomsOutputSchema
@@ -61,29 +63,40 @@ const diagnoseSymptomsFlow = ai.defineFlow(
 
     const promptParts: any[] = [
       `
-You are a healthcare guidance AI for a student hackathon project called "Swasthya Margdarshan".
+You are a medical triage AI for a health web application. Your task is to analyze the user's symptom description and generate a structured JSON output.
 
 IMPORTANT RULES:
-- You are NOT a doctor.
-- Do NOT give medical diagnosis.
-- Do NOT prescribe medicines.
-- Use very simple language for rural users.
-- If unsure, choose Yellow or Red.
+- You are NOT a real doctor. Your primary goal is safety.
+- Do NOT give a definitive medical diagnosis. Use general terms.
+- Do NOT prescribe or mention specific medicines.
+- Use very simple, clear language for a user with low medical literacy.
+- If unsure, always choose a higher risk level (Yellow or Red).
 
 TASK:
-Analyze the user's health problem and return ONE risk level:
-- Green: Minor issue, safe home care
-- Yellow: Moderate issue, doctor visit recommended
-- Red: Serious issue, hospital visit immediately
+Analyze the user's health problem and return a JSON object with the following structure.
 
-OUTPUT FORMAT:
-- riskLevel: Green / Yellow / Red
-- analysis: One simple sentence
-- precautions: 3–5 basic, safe home-care steps (only for Green & Yellow)
-- nextAction:
-   Green → "Continue home care and monitor"
-   Yellow → "Visit a nearby doctor or health center"
-   Red → "Go to the nearest hospital immediately"
+RISK LEVEL LOGIC:
+- Green: Mild, common, non-dangerous issue (e.g., minor cut, simple cold). Can be managed at home.
+- Yellow: Moderate issue that needs monitoring or may require a doctor visit if it worsens (e.g., persistent fever, mild sprain).
+- Red: Serious, urgent issue requiring immediate medical attention (e.g., chest pain, difficulty breathing, heavy bleeding, suspected fracture).
+
+JSON FIELD REQUIREMENTS:
+- riskLevel: "Green", "Yellow", or "Red".
+- title: A short, simple title for the condition (e.g., "Minor Cold Symptoms," "Signs of a Sprain," "Possible Emergency").
+- summary: One or two sentences explaining the situation in simple terms.
+- whyThisResult: A bulleted list of 2-3 reasons for the risk level, based on the symptoms.
+- precautions: 3-5 basic, safe home-care steps. For "Red" risk, this list should be empty or contain only "Do not move the affected area if injured."
+- nextAction: A clear, direct instruction.
+  - Green: "Continue home care and monitor for any changes."
+  - Yellow: "Visit a nearby doctor or health center if symptoms do not improve."
+  - Red: "Go to the nearest hospital emergency room immediately."
+- hospitalRequired: true if Red, false otherwise.
+- specialist: The type of doctor to see. Use "General Physician" for Green/Yellow unless a specific specialist is obvious. Use "Emergency" for Red.
+- googleMapsRequired: true if Red, false for Green. For Yellow, it's optional (true if a doctor visit is strongly suggested).
+- googleMapsQuery:
+  - If googleMapsRequired is true, provide a search query like "Emergency hospital near me" or "Cardiologist near me".
+  - If googleMapsRequired is false, this MUST be null.
+- disclaimer: Always include "This is not a medical diagnosis. Consult a licensed medical professional."
 
 USER DETAILS:
 Name: ${userDetails?.name || "Not provided"}
@@ -126,14 +139,18 @@ export async function diagnoseSymptoms(
 ): Promise<DiagnoseSymptomsOutput> {
   try {
     if (!input.description && !input.photoDataUri) {
-      return {
+       return {
         riskLevel: "Yellow",
-        analysis: "Not enough information provided.",
-        precautions: [
-          "Try to describe the problem clearly",
-          "Upload a photo if possible",
-        ],
-        nextAction: "Visit a nearby doctor or health center",
+        title: "Not Enough Information",
+        summary: "You have not provided enough information for a useful suggestion.",
+        whyThisResult: ["No symptom description was provided.", "No photo was uploaded."],
+        precautions: ["Please describe your problem clearly.", "Consider uploading a photo if it helps explain the issue."],
+        nextAction: "Please go back and provide more details, or visit a nearby doctor if you are concerned.",
+        hospitalRequired: false,
+        specialist: "General Physician",
+        googleMapsRequired: false,
+        googleMapsQuery: null,
+        disclaimer: "This is not a medical diagnosis. Consult a licensed medical professional."
       };
     }
 
@@ -143,65 +160,53 @@ export async function diagnoseSymptoms(
 
     const text = input.description.toLowerCase();
 
-    const redFlags = [
-      "chest pain",
-      "difficulty breathing",
-      "not breathing",
-      "unconscious",
-      "heavy bleeding",
-      "severe bleeding",
-      "accident",
-      "poison",
-      "heart attack",
-      "seizure",
-    ];
-    
-    const yellowFlags = [
-      "fever",
-      "headache",
-      "vomiting",
-      "stomach pain",
-      "swelling",
-      "rash",
-      "cut",
-      "bleeding",
-      "injury",
-    ];
-    
+    const redFlags = ["chest pain", "difficulty breathing", "not breathing", "unconscious", "heavy bleeding", "severe bleeding", "accident", "poison", "heart attack", "seizure", "fracture"];
+    const yellowFlags = ["fever", "headache", "vomiting", "stomach pain", "swelling", "rash", "deep cut", "bleeding", "sprain", "injury"];
 
     if (redFlags.some((k) => text.includes(k))) {
       return {
         riskLevel: "Red",
-        analysis: "This problem looks serious.",
+        title: "Potential Emergency",
+        summary: "The symptoms you described may indicate a serious medical emergency.",
+        whyThisResult: ["Keywords like 'chest pain', 'difficulty breathing', or 'heavy bleeding' suggest a high-risk situation."],
         precautions: [],
-        nextAction: "Go to the nearest hospital immediately",
+        nextAction: "Go to the nearest hospital emergency room immediately.",
+        hospitalRequired: true,
+        specialist: "Emergency",
+        googleMapsRequired: true,
+        googleMapsQuery: "Emergency hospital near me",
+        disclaimer: "This is not a medical diagnosis. Consult a licensed medical professional."
       };
     }
 
     if (yellowFlags.some((k) => text.includes(k))) {
       return {
         riskLevel: "Yellow",
-        analysis: "This problem needs attention.",
-        precautions: [
-          "Take rest",
-          "Drink enough water",
-          "Avoid heavy work",
-          "Monitor symptoms",
-        ],
-        nextAction: "Visit a nearby doctor or health center",
+        title: "Caution Advised",
+        summary: "The symptoms described need attention and should be monitored closely.",
+        whyThisResult: ["Symptoms like fever, vomiting, or moderate pain can sometimes worsen without care."],
+        precautions: ["Take adequate rest.", "Stay hydrated by drinking water or fluids.", "Monitor your symptoms for any changes."],
+        nextAction: "Visit a nearby doctor or health center if symptoms do not improve or get worse.",
+        hospitalRequired: false,
+        specialist: "General Physician",
+        googleMapsRequired: true,
+        googleMapsQuery: "General Physician near me",
+        disclaimer: "This is not a medical diagnosis. Consult a licensed medical professional."
       };
     }
 
     return {
       riskLevel: "Green",
-      analysis: "The problem appears to be minor.",
-      precautions: [
-        "Take rest",
-        "Keep the area clean",
-        "Drink warm water",
-        "Avoid strain",
-      ],
-      nextAction: "Continue home care and monitor",
+      title: "Minor Issue",
+      summary: "The problem you described appears to be minor and can likely be managed at home.",
+      whyThisResult: ["The symptoms do not match common high-risk or moderate-risk indicators."],
+      precautions: ["Keep the affected area clean.", "Take adequate rest.", "Drink plenty of fluids."],
+      nextAction: "Continue home care and monitor for any changes.",
+      hospitalRequired: false,
+      specialist: "General Physician",
+      googleMapsRequired: false,
+      googleMapsQuery: null,
+      disclaimer: "This is not a medical diagnosis. Consult a licensed medical professional."
     };
   }
 }
